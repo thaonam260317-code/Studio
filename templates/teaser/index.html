@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width={{W}}, height={{H}}" />
+<script src="vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="base.css" />
+<style>
+  :root { --w: {{W}}px; --h: {{H}}px; --u: {{U}}px; --bg: {{BG}}; --text: {{TEXT}}; --primary: {{PRIMARY}}; --accent: {{ACCENT}}; }
+  .flood { transform-origin: left center; }
+  .big { font-size: calc(var(--u) * 15); font-weight: 900; letter-spacing: -0.05em; line-height: 0.92; text-transform: uppercase; max-width: 92%; }
+  .portrait .big { font-size: calc(var(--u) * 16); }
+  .on-primary { color: var(--bg); }
+  .count { position: absolute; top: calc(var(--u) * 5); left: calc(var(--u) * 6); font-size: calc(var(--u) * 2.4); letter-spacing: 0.3em; font-weight: 700; opacity: 0.7; font-variant-numeric: tabular-nums; }
+  .end .name { font-size: calc(var(--u) * 12); font-weight: 900; letter-spacing: -0.05em; }
+  .end .cta { margin-top: calc(var(--u) * 4); font-size: calc(var(--u) * 3.4); font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  .end .url { margin-top: calc(var(--u) * 2); font-size: calc(var(--u) * 2.6); opacity: 0.6; }
+</style>
+</head>
+<body>
+<script id="studio-data" type="application/json">{{DATA}}</script>
+<div id="root" class="{{ORIENTATION}}" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="{{W}}" data-height="{{H}}">
+  <div class="layer" id="stage"></div>
+  <div class="layer vignette"></div>
+  <div class="layer grain"></div>
+</div>
+<script src="kit.js"></script>
+<script>
+  // Teaser cắt theo lưới nhịp: mỗi cảnh dài đúng số beat, mọi cú cắt rơi đúng vạch beat.
+  const S = window.Studio, d = S.data, stage = document.getElementById("stage");
+  const T = d.timing, beat = T.beat;
+  const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
+  const colors = ["var(--primary)", "var(--bg)", "var(--accent)", "var(--bg)", "var(--primary)"];
+
+  // Cú mở 2 beat: tên thương hiệu đập vào.
+  const open = S.el("div", "layer center");
+  const ot = S.el("div", "big", d.script.title);
+  open.appendChild(ot); stage.appendChild(open);
+  tl.from(ot, { scale: 1.6, opacity: 0, filter: "blur(20px)", duration: beat * 1.5 }, 0)
+    .set(open, { autoAlpha: 0 }, T.intro);
+
+  d.script.scenes.forEach((sc, i) => {
+    const at = T.intro + i * T.scene;
+    const bg = colors[i % colors.length];
+    const el = S.el("div", "layer center");
+    el.style.background = bg;
+    const flood = S.el("div", "layer flood"); flood.style.background = colors[(i + 1) % colors.length];
+    const h = S.el("div", "big" + (bg.includes("primary") || bg.includes("accent") ? " on-primary" : ""));
+    const hw = S.words(h, sc.headline);
+    const n = S.el("div", "count", String(i + 1).padStart(2, "0") + " / " + String(d.script.scenes.length).padStart(2, "0"));
+    el.append(h, n); stage.appendChild(el);
+    tl.set(el, { autoAlpha: 0 }, 0).set(el, { autoAlpha: 1 }, at)
+      .from(hw, { yPercent: 120, duration: beat * 1.2, stagger: beat * 0.25 }, at)
+      .fromTo(h, { scale: 1.12 }, { scale: 1, duration: T.scene, ease: "power2.out" }, at)
+      // Nhấn trên beat thứ ba: chữ giật nhẹ.
+      .to(h, { x: S.data.u * 0.8, duration: beat * 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" }, at + beat * 2)
+      .set(el, { autoAlpha: 0 }, at + T.scene);
+  });
+
+  const endAt = T.total - T.end;
+  const end = S.el("div", "layer center end");
+  const name = S.el("div", "name", d.script.title);
+  const cta = S.el("div", "cta", d.script.cta);
+  const url = S.el("div", "url", d.script.url);
+  end.append(name, cta, url); stage.appendChild(end);
+  tl.set(end, { autoAlpha: 0 }, 0).set(end, { autoAlpha: 1 }, endAt)
+    .from(name, { scale: 0.7, opacity: 0, duration: beat * 2, ease: "back.out(1.8)" }, endAt)
+    .from(cta, { opacity: 0, y: S.data.u * 2, duration: beat * 1.5 }, endAt + beat)
+    .from(url, { opacity: 0, duration: beat * 1.5 }, endAt + beat * 2);
+
+  tl.set({}, {}, T.total);
+  window.__timelines["main"] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>

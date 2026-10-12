@@ -1,0 +1,73 @@
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #15181d; --muted: #5b6370; --line: #d5d9df;
+  --accent: #d6492a; --primary: #1f6feb; --assist: #9fb3cf; --tag: #e3e7ec; --ok: #1d7a46; --bad: #b42318;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418; --panel: #181c22; --ink: #e7eaee; --muted: #9aa3af; --line: #2b313a;
+    --accent: #ff7a59; --primary: #5b9dff; --assist: #3d4c63; --tag: #232932; --ok: #4cc38a; --bad: #ff8a80; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+a { color: var(--primary); }
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); height: 5px; }
+.bars i:nth-child(1){background:#c0c0c0}.bars i:nth-child(2){background:#c0c000}.bars i:nth-child(3){background:#00c0c0}.bars i:nth-child(4){background:#00c000}.bars i:nth-child(5){background:#c000c0}.bars i:nth-child(6){background:#c00000}.bars i:nth-child(7){background:#0000c0}
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.top .brand { font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+.top nav { display: flex; gap: 18px; font-size: 14px; }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--ink); }
+main { max-width: 1120px; margin: 0 auto; padding: 32px 20px 80px; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0; }
+p { margin: 0; max-width: 70ch; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-size: 12px; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.step-head { display: flex; align-items: baseline; gap: 10px; }
+.step-head .n { font-family: var(--f-mono); font-size: 12px; color: var(--accent); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+input[type="text"], input[type="url"], input[type="number"], textarea, select {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; min-width: 0;
+}
+input[type="url"] { flex: 1 1 320px; }
+textarea { width: 100%; resize: vertical; }
+button { font: inherit; font-weight: 600; border-radius: 6px; padding: 9px 16px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+button:disabled { opacity: 0.5; cursor: progress; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .choice:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.error { color: var(--bad); font-size: 14px; }
+.note { font-size: 13px; color: var(--muted); }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .facts { grid-template-columns: 1fr; } }
+.facts ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.swatches { display: flex; gap: 8px; }
+.swatch { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.swatch input[type="color"] { width: 44px; height: 32px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; }
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.choice { text-align: left; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; font-weight: 400; }
+.choice[aria-pressed="true"] { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.choice:disabled { cursor: not-allowed; }
+.choice b { font-weight: 650; }
+.pill { font-family: var(--f-mono); font-size: 11px; background: var(--tag); border-radius: 4px; padding: 1px 6px; align-self: flex-start; }
+.scene-edit { display: grid; grid-template-columns: 140px 1fr; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.scene-edit:first-child { border-top: 0; }
+.scene-edit .full { grid-column: 1 / -1; }
+@media (max-width: 560px) { .scene-edit { grid-template-columns: 1fr; } }
+.stat-edit { display: grid; grid-template-columns: 70px 120px 70px 1fr auto; gap: 8px; }
+@media (max-width: 560px) { .stat-edit { grid-template-columns: 1fr 1fr; } }
+video { width: 100%; max-height: 70vh; background: #000; border-radius: 8px; }
+.scroller { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table.m { border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 1080px; width: 100%; }
+.m th, .m td { border-bottom: 1px solid var(--line); padding: 0; }
+.m .uc { position: sticky; left: 0; background: var(--panel); text-align: left; padding: 10px 12px; min-width: 240px; border-right: 1px solid var(--line); font-weight: 500; }
+.m .uc small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+.m .tool { writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--f-mono); font-size: 11px; padding: 10px 6px; height: 180px; text-align: left; white-space: nowrap; }
+.m td.c { text-align: center; width: 42px; height: 40px; }
+.m td.c span { display: inline-block; width: 20px; height: 20px; border-radius: 4px; }
+.m .s2 { background: var(--primary); } .m .s1 { background: var(--assist); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend span span { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }

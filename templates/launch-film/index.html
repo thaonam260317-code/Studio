@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width={{W}}, height={{H}}" />
+<script src="vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="base.css" />
+<style>
+  :root { --w: {{W}}px; --h: {{H}}px; --u: {{U}}px; --bg: {{BG}}; --text: {{TEXT}}; --primary: {{PRIMARY}}; --accent: {{ACCENT}}; }
+  .grid { opacity: 0.18; background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--text) 18%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--text) 18%, transparent) 1px, transparent 1px);
+    background-size: calc(var(--u) * 8) calc(var(--u) * 8);
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
+  .title { font-size: calc(var(--u) * 11); font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; }
+  .tagline { margin-top: calc(var(--u) * 3); font-size: calc(var(--u) * 3.4); opacity: 0.78; max-width: 70%; line-height: 1.3; }
+  .sweep { position: absolute; top: -20%; bottom: -20%; width: 18%; left: -30%;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 22%, transparent), transparent); transform: skewX(-18deg); }
+  .scene { align-items: flex-start; text-align: left; justify-content: center; padding: 0 calc(var(--u) * 12); perspective: 1200px; }
+  .portrait .scene { padding: 0 calc(var(--u) * 8); }
+  .scene .rule { width: calc(var(--u) * 10); height: calc(var(--u) * 0.5); background: var(--accent); margin: calc(var(--u) * 2.2) 0; transform-origin: left; }
+  .scene h2 { font-size: calc(var(--u) * 8.4); font-weight: 750; letter-spacing: -0.03em; line-height: 1.02; max-width: 88%; }
+  .portrait .scene h2 { font-size: calc(var(--u) * 10); max-width: 100%; }
+  .scene p { margin-top: calc(var(--u) * 3); font-size: calc(var(--u) * 3.2); opacity: 0.75; max-width: 62%; line-height: 1.35; }
+  .portrait .scene p { max-width: 100%; font-size: calc(var(--u) * 4); }
+  .stats { display: flex; gap: calc(var(--u) * 8); }
+  .portrait .stats { flex-direction: column; gap: calc(var(--u) * 6); }
+  .stat .num { font-size: calc(var(--u) * 11); font-weight: 800; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .stat .lab { font-size: calc(var(--u) * 2.8); opacity: 0.7; margin-top: calc(var(--u) * 1); }
+  .stat .bar { height: calc(var(--u) * 0.5); background: var(--primary); margin-top: calc(var(--u) * 2); transform-origin: left; }
+  .end .mark { width: calc(var(--u) * 14); height: calc(var(--u) * 14); border-radius: calc(var(--u) * 3.6);
+    background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center;
+    font-size: calc(var(--u) * 7.4); font-weight: 800; color: var(--bg); }
+  .end .name { margin-top: calc(var(--u) * 4); font-size: calc(var(--u) * 7.6); font-weight: 800; letter-spacing: -0.03em; }
+  .end .cta { margin-top: calc(var(--u) * 4); padding: calc(var(--u) * 1.6) calc(var(--u) * 4); border-radius: 999px;
+    background: var(--text); color: var(--bg); font-size: calc(var(--u) * 3); font-weight: 700; }
+  .end .url { margin-top: calc(var(--u) * 2.4); font-size: calc(var(--u) * 2.6); opacity: 0.6; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<script id="studio-data" type="application/json">{{DATA}}</script>
+<div id="root" class="{{ORIENTATION}}" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="{{W}}" data-height="{{H}}">
+  <div class="layer" id="bgl">
+    <div class="glow" id="g1" style="width:70%;height:70%;left:-15%;top:-20%;background:var(--primary)"></div>
+    <div class="glow" id="g2" style="width:60%;height:60%;right:-15%;bottom:-25%;background:var(--accent)"></div>
+    <div class="layer grid" id="grid"></div>
+  </div>
+  <div class="layer" id="stage"></div>
+  <div class="layer vignette"></div>
+  <div class="layer grain"></div>
+</div>
+<script src="kit.js"></script>
+<script>
+  const S = window.Studio, d = S.data, stage = document.getElementById("stage");
+  const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
+  const T = d.timing;
+
+  // Nền trôi chậm suốt phim: camera không bao giờ đứng yên.
+  tl.fromTo("#g1", { x: 0, y: 0 }, { x: "18%", y: "12%", duration: T.total, ease: "none" }, 0);
+  tl.fromTo("#g2", { x: 0, y: 0 }, { x: "-14%", y: "-10%", duration: T.total, ease: "none" }, 0);
+  tl.fromTo("#grid", { scale: 1.12 }, { scale: 1, duration: T.total, ease: "none" }, 0);
+
+  // Cảnh mở: tên lộ ra từng từ, tagline mờ dần vào, một vệt sáng quét ngang.
+  const intro = S.el("div", "layer center");
+  const title = S.el("h1", "title"); const tw = S.words(title, d.script.title);
+  const tag = S.el("p", "tagline", d.script.tagline);
+  const sweep = S.el("div", "sweep");
+  intro.append(title, tag, sweep); stage.appendChild(intro);
+  tl.from(tw, { yPercent: 110, duration: 1.1, stagger: 0.08 }, 0.2)
+    .from(tag, { opacity: 0, y: S.data.u * 2, filter: "blur(8px)", duration: 1 }, 0.8)
+    .to(sweep, { left: "120%", duration: 1.4, ease: "power2.inOut" }, 0.6)
+    .to(intro, { opacity: 0, scale: 0.96, filter: "blur(10px)", duration: 0.5, ease: "power2.in" }, T.intro - 0.5);
+
+  // Từng cảnh: nhãn, vạch nhấn, headline lộ từ chân chữ, câu phụ mờ vào; camera đẩy nhẹ rồi thoát.
+  d.script.scenes.forEach((sc, i) => {
+    const at = T.intro + i * T.scene;
+    const el = S.el("div", "layer center scene");
+    const k = S.el("div", "kicker", sc.kicker);
+    const rule = S.el("div", "rule");
+    const h = S.el("h2"); const hw = S.words(h, sc.headline);
+    el.append(k, rule, h);
+    let p = null;
+    if (sc.body) { p = S.el("p", null, sc.body); el.appendChild(p); }
+    stage.appendChild(el);
+    tl.set(el, { autoAlpha: 0 }, 0)
+      .set(el, { autoAlpha: 1 }, at)
+      .fromTo(el, { scale: 1.05, rotationX: 6 }, { scale: 1, rotationX: 0, duration: T.scene, ease: "power1.out" }, at)
+      .from(k, { opacity: 0, x: -S.data.u * 3, duration: 0.6 }, at + 0.1)
+      .from(rule, { scaleX: 0, duration: 0.7 }, at + 0.15)
+      .from(hw, { yPercent: 110, duration: 0.9, stagger: 0.06 }, at + 0.25);
+    if (p) tl.from(p, { opacity: 0, y: S.data.u * 1.5, filter: "blur(6px)", duration: 0.8 }, at + 0.75);
+    tl.to(el, { autoAlpha: 0, y: -S.data.u * 3, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, at + T.scene - 0.45);
+  });
+
+  // Số liệu: đếm lên, thanh chạy theo.
+  if (d.script.stats.length) {
+    const at = T.intro + d.script.scenes.length * T.scene;
+    const el = S.el("div", "layer center"); const row = S.el("div", "stats");
+    d.script.stats.forEach((st, i) => {
+      const box = S.el("div", "stat"), num = S.el("div", "num"), lab = S.el("div", "lab", st.label), bar = S.el("div", "bar");
+      box.append(num, lab, bar); row.appendChild(box);
+      S.counter(tl, num, st, at + 0.3 + i * 0.2, 1.8);
+      tl.from(box, { opacity: 0, y: S.data.u * 3, duration: 0.8 }, at + 0.15 + i * 0.2)
+        .from(bar, { scaleX: 0, duration: 1.6, ease: "power3.out" }, at + 0.4 + i * 0.2);
+    });
+    el.appendChild(row); stage.appendChild(el);
+    tl.set(el, { autoAlpha: 0 }, 0).set(el, { autoAlpha: 1 }, at)
+      .to(el, { autoAlpha: 0, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, at + T.stats - 0.45);
+  }
+
+  // End card.
+  const endAt = T.total - T.end;
+  const end = S.el("div", "layer center end");
+  const mark = S.el("div", "mark", (d.script.title.trim()[0] || "•").toUpperCase());
+  const name = S.el("div", "name", d.script.title);
+  const cta = S.el("div", "cta", d.script.cta);
+  const url = S.el("div", "url", d.script.url);
+  end.append(mark, name, cta, url); stage.appendChild(end);
+  tl.set(end, { autoAlpha: 0 }, 0).set(end, { autoAlpha: 1 }, endAt)
+    .from(mark, { scale: 0.4, rotation: -20, opacity: 0, duration: 1, ease: "back.out(1.6)" }, endAt + 0.1)
+    .from(name, { opacity: 0, y: S.data.u * 2, duration: 0.8 }, endAt + 0.45)
+    .from(cta, { opacity: 0, scale: 0.85, duration: 0.7, ease: "back.out(2)" }, endAt + 0.75)
+    .from(url, { opacity: 0, duration: 0.6 }, endAt + 1);
+
+  tl.set({}, {}, T.total);
+  window.__timelines["main"] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>
