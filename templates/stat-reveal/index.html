@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width={{W}}, height={{H}}" />
+<script src="vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="base.css" />
+<style>
+  :root { --w: {{W}}px; --h: {{H}}px; --u: {{U}}px; --bg: {{BG}}; --text: {{TEXT}}; --primary: {{PRIMARY}}; --accent: {{ACCENT}}; }
+  .lead { font-size: calc(var(--u) * 7); font-weight: 780; letter-spacing: -0.03em; line-height: 1.05; max-width: 86%; }
+  .ring { position: relative; width: calc(var(--u) * 62); height: calc(var(--u) * 62); display: grid; place-items: center; }
+  .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .num { font-size: calc(var(--u) * 14); font-weight: 850; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+  .lab { font-size: calc(var(--u) * 3); opacity: 0.72; margin-top: calc(var(--u) * 1); }
+  .dots { position: absolute; inset: 0; }
+  .dot { position: absolute; width: calc(var(--u) * 0.7); height: calc(var(--u) * 0.7); border-radius: 50%; background: var(--text); opacity: 0.5; }
+  .end .name { font-size: calc(var(--u) * 8); font-weight: 800; letter-spacing: -0.03em; }
+  .end .url { margin-top: calc(var(--u) * 2); font-size: calc(var(--u) * 2.8); opacity: 0.65; }
+</style>
+</head>
+<body>
+<script id="studio-data" type="application/json">{{DATA}}</script>
+<div id="root" class="{{ORIENTATION}}" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="{{W}}" data-height="{{H}}">
+  <div class="glow" id="g1" style="width:80%;height:80%;left:10%;top:10%;background:var(--primary);opacity:0.28"></div>
+  <div class="layer dots" id="dots"></div>
+  <div class="layer" id="stage"></div>
+  <div class="layer vignette"></div>
+  <div class="layer grain"></div>
+</div>
+<script src="kit.js"></script>
+<script>
+  // Video số liệu: một trường điểm hút về trung tâm, rồi từng con số đếm lên trong vòng tròn.
+  const S = window.Studio, d = S.data, stage = document.getElementById("stage");
+  const T = d.timing;
+  const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
+
+  // Trường điểm có hạt giống cố định để mỗi lần render ra cùng một hình.
+  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const dots = document.getElementById("dots");
+  const pts = Array.from({ length: 90 }, () => { const e = S.el("div", "dot"); e.style.left = rnd() * 100 + "%"; e.style.top = rnd() * 100 + "%"; dots.appendChild(e); return e; });
+  tl.to(pts, { left: "50%", top: "50%", opacity: 0, duration: T.intro + 0.6, ease: "power3.in", stagger: { each: 0.004, from: "random" } }, 0.2);
+  tl.fromTo("#g1", { scale: 0.7 }, { scale: 1.15, duration: T.total, ease: "none" }, 0);
+
+  const lead = d.script.scenes[0];
+  const intro = S.el("div", "layer center");
+  const k = S.el("div", "kicker", lead ? lead.kicker : d.script.title);
+  const h = S.el("div", "lead"); const hw = S.words(h, lead ? lead.headline : d.script.tagline);
+  intro.append(k, h); stage.appendChild(intro);
+  tl.from(k, { opacity: 0, y: S.data.u * 2, duration: 0.6 }, 0.1)
+    .from(hw, { yPercent: 110, duration: 0.9, stagger: 0.06 }, 0.25)
+    .to(intro, { autoAlpha: 0, filter: "blur(8px)", duration: 0.4, ease: "power2.in" }, T.intro - 0.4);
+
+  const R = 46, C = 2 * Math.PI * R;
+  d.script.stats.forEach((st, i) => {
+    const at = T.intro + i * T.stat;
+    const el = S.el("div", "layer center");
+    const ring = S.el("div", "ring");
+    ring.innerHTML = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" fill="none" stroke="currentColor" stroke-opacity="0.12" stroke-width="1.2"/><circle class="arc" cx="50" cy="50" r="${R}" fill="none" stroke="${i % 2 ? "var(--accent)" : "var(--primary)"}" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>`;
+    const inner = S.el("div"); const num = S.el("div", "num"); const lab = S.el("div", "lab", st.label);
+    inner.append(num, lab); ring.appendChild(inner); el.appendChild(ring); stage.appendChild(el);
+    S.counter(tl, num, st, at + 0.2, T.stat - 0.9);
+    tl.set(el, { autoAlpha: 0 }, 0).set(el, { autoAlpha: 1 }, at)
+      .from(ring, { scale: 0.85, opacity: 0, duration: 0.8 }, at)
+      .to(ring.querySelector(".arc"), { attr: { "stroke-dashoffset": C * 0.08 }, duration: T.stat - 0.9, ease: "power3.out" }, at + 0.2)
+      .to(el, { autoAlpha: 0, scale: 1.06, filter: "blur(8px)", duration: 0.4, ease: "power2.in" }, at + T.stat - 0.4);
+  });
+
+  const endAt = T.total - T.end;
+  const end = S.el("div", "layer center end");
+  const name = S.el("div", "name", d.script.title); const url = S.el("div", "url", d.script.url);
+  end.append(name, url); stage.appendChild(end);
+  tl.set(end, { autoAlpha: 0 }, 0).set(end, { autoAlpha: 1 }, endAt)
+    .from(name, { opacity: 0, y: S.data.u * 2, duration: 0.8 }, endAt + 0.1)
+    .from(url, { opacity: 0, duration: 0.6 }, endAt + 0.5);
+
+  tl.set({}, {}, T.total);
+  window.__timelines["main"] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>
